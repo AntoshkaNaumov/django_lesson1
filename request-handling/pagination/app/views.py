@@ -1,19 +1,25 @@
+from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 from django.urls import reverse
+import csv
 
 
 def index(request):
-    return redirect(reverse(bus_stations))
+    return redirect(reverse('bus_stations'))
 
+
+with open('data-398-2018-08-30.csv', 'r') as file:
+    reader = csv.DictReader(file)
+    content = []
+    for item in reader:
+        content.append(item)
 
 def bus_stations(request):
-    current_page = 1
-    next_page_url = 'write your url'
-    return render(request, 'index.html', context={
-        'bus_stations': [{'Name': 'название', 'Street': 'улица', 'District': 'район'},
-                         {'Name': 'другое название', 'Street': 'другая улица', 'District': 'другой район'}],
-        'current_page': current_page,
-        'prev_page_url': None,
-        'next_page_url': next_page_url,
-    })
-
+    paginator = Paginator(content, 15)
+    page_number = int(request.GET.get('page', 1))
+    page = paginator.get_page(page_number)
+    context = {
+        'bus_stations': content,
+        'page': page,
+    }
+    return render(request, 'index.html', context)
